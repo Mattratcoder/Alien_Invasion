@@ -1,45 +1,45 @@
 import sys
+from time import sleep
 
 import pygame
 
 from settings import Settings
-
+from game_stats import GameStats
+from scoreboard import Scoreboard
+from button import Button
 from ship import Ship
+from bullet import Bullet
+from alien import Alien
+
 
 class AlienInvasion:
-    #overall class to manage the game assets and behavior
-    
+    """Overall class to manage game assets and behavior."""
+
     def __init__(self):
-        #initialize the game and create game resources
+        """Initialize the game, and create game resources."""
         pygame.init()
         self.settings = Settings()
-        
-        self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
+
+        self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+        self.settings.screen_width = self.screen.get_rect().width
+        self.settings.screen_height = self.screen.get_rect().height
         pygame.display.set_caption("Alien Invasion")
-        
+
+        # Create an instance to store game statistics,
+        #   and create a scoreboard.
+        self.stats = GameStats(self)
+        self.sb = Scoreboard(self)
+
         self.ship = Ship(self)
-        
-        #set the background color
-        self.bg_color = (230, 230, 230)
-        
-    
+        self.bullets = pygame.sprite.Group()
+        self.aliens = pygame.sprite.Group()
+
+        self._create_fleet()
+
+        # Make the Play button.
+        self.play_button = Button(self, "Play")
+
     def run_game(self):
-        #start the main loop for the game
+        """Start the main loop for the game."""
         while True:
-            #watch for keyboard and mouse events
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    sys.exit()
-                    
-            #redraw the screen during each pass through the loop
-            self.screen.fill(self.settings.bg_color)
-            self.ship.blitme()
-                    
-            #make the most recently drawn screen visible
-            pygame.display.flip()
-            
-            
-if __name__ == '__main__':
-    #make a game instance and run the game
-    ai = AlienInvasion()
-    ai.run_game()
+            self._check_events()
